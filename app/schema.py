@@ -21,5 +21,9 @@ class UnitCreate(BaseModel):
     unit_type: str
     station_location: str
 
+class UnitUpdate(BaseModel):
+    unit_type: str | None = None
+    station_location: str | None = None
+
 class UnitStatusUpdate(BaseModel):
     status : UnitStatus

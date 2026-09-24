@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.schema import Unit, UnitCreate, UnitStatusUpdate
+from app.schema import Unit, UnitCreate, UnitUpdate, UnitStatusUpdate
 from app.database import get_db
 from app.db_models import UnitDB
 
@@ -73,7 +73,17 @@ def update_status(unit_id: int, status_update: UnitStatusUpdate,
     db.refresh(unit)
     return unit
 
-@app.patch("/api/units/{unit_id}")
+
+@app.patch("/api/units/{unit_id}", response_model=Unit)
+def update_unit(unit_id: int, unit_data: UnitUpdate, db: Session = Depends(get_db)):
+    unit = db.get(UnitDB, unit_id)
+    if unit is None:
+        raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found")
+    for field, value in unit_data.model_dump(exclude_unset=True).items():
+        setattr(unit, field, value)
+    db.commit()
+    db.refresh(unit)
+    return unit
 
 
 @app.delete("/api/units/{unit_id}")
