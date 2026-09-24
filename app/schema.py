@@ -15,11 +15,11 @@ class Unit(BaseModel):
     callsign : str
     unit_type: str 
     status: str
-    location: str
+    station_location: str
 
 class UnitCreate(BaseModel):
     unit_type: str
-    location: str
+    station_location: str
 
 class UnitStatusUpdate(BaseModel):
     status : UnitStatus

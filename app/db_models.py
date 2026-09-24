@@ -9,4 +9,4 @@ class UnitDB(Base):
     callsign: Mapped[str] = mapped_column(String(20),unique=True)
     unit_type: Mapped[str] = mapped_column(String(30))
     status: Mapped[str] = mapped_column(String(20), default="available")
-    location: Mapped[str] = mapped_column(String(100))
+    station_location: Mapped[str] = mapped_column(String(100))

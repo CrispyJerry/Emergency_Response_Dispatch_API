@@ -30,13 +30,15 @@ def root():
 
 
 @app.get("/api/units", response_model=list[Unit])
-def get_units(status: str | None = None, unit_type: str | None = None,
+def get_units(status: str | None = None, unit_type: str | None = None,station_location: str | None = None,
               db: Session = Depends(get_db)):
     query = select(UnitDB)
     if status is not None:
         query = query.where(UnitDB.status == status)
     if unit_type is not None:
         query = query.where(UnitDB.unit_type == unit_type)
+    if station_location is not None:
+        query = query.where(UnitDB.station_location == station_location)
     return db.scalars(query).all()
 
 
@@ -54,7 +56,7 @@ def create_unit(unit_data: UnitCreate, db: Session = Depends(get_db)):
         callsign=generate_callsign(db, unit_data.unit_type),
         unit_type=unit_data.unit_type,
         status="available",
-        location=unit_data.location,
+        station_location=unit_data.station_location,
     )
     db.add(new_unit)
     db.commit()
@@ -72,6 +74,8 @@ def update_status(unit_id: int, status_update: UnitStatusUpdate,
     db.commit()
     db.refresh(unit)
     return unit
+
+@app.patch("/api/units/{unit_id}")
 
 
 @app.delete("/api/units/{unit_id}")
