@@ -3,10 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.schema import Unit, UnitCreate, UnitStatusUpdate
-from app.database import engine, Base, get_db
+from app.database import get_db
 from app.db_models import UnitDB
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
