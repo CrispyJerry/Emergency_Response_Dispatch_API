@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 from enum import Enum
 
 class UnitStatus(str,Enum):
@@ -9,6 +9,8 @@ class UnitStatus(str,Enum):
 
 
 class Unit(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     unit_id : int
     callsign : str
     unit_type: str 
