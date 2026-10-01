@@ -9,7 +9,13 @@ A FastAPI service for managing emergency response units (ambulances, fire trucks
 
 ## Setup
 
-1. **Create the database** (in psql or pgAdmin):
+1. **Create the database.** On Linux, as the `postgres` user:
+
+   ```bash
+   sudo -u postgres createdb unit_management
+   ```
+
+   Or from psql / pgAdmin:
 
    ```sql
    CREATE DATABASE unit_management;
@@ -18,13 +24,13 @@ A FastAPI service for managing emergency response units (ambulances, fire trucks
 2. **Create a virtual environment and install dependencies:**
 
    ```bash
-   python -m venv venv
-   venv\Scripts\activate        # Windows
-   # source venv/bin/activate   # macOS/Linux
+   python3 -m venv .venv
+   source .venv/bin/activate      # Linux/macOS
+   # .venv\Scripts\activate       # Windows
    pip install -r requirements.txt
    ```
 
-3. **Configure environment variables.** Copy `.env.example` to `.env` and fill in your PostgreSQL credentials:
+3. **Configure environment variables.** Copy `.env.example` to `.env` (`cp .env.example .env`) and fill in your PostgreSQL credentials:
 
    ```
    DATABASE_URL=postgresql+psycopg://user:password@localhost:5432/unit_management
