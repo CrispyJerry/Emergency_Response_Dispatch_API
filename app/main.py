@@ -68,7 +68,7 @@ def update_status(unit_id: int, status_update: UnitStatusUpdate,
     unit = db.get(UnitDB, unit_id)
     if unit is None:
         raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found")
-    unit.status = status_update.status.value
+    unit.status = status_update.status
     db.commit()
     db.refresh(unit)
     return unit

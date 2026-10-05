@@ -1,29 +1,27 @@
-from pydantic import BaseModel,ConfigDict
+from pydantic import BaseModel,ConfigDict, Field
+from typing import Literal
 from enum import Enum
 
-class UnitStatus(str,Enum):
-    available = "available"
-    en_route = "en_route"
-    on_scene = "on_scene"
-    unavailable = "unavailable"
 
+UnitType = Literal["Ambulance","Firetruck","Police"]
+UnitStatus = Literal["available","en_route","arrived"]
 
 class Unit(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     unit_id : int
     callsign : str
-    unit_type: str 
-    status: str
+    unit_type: str | None = None
+    status: UnitStatus | None = None
     station_location: str
 
 class UnitCreate(BaseModel):
-    unit_type: str
-    station_location: str
+    unit_type: UnitType
+    station_location: str = Field(min_length=1)
 
 class UnitUpdate(BaseModel):
-    unit_type: str | None = None
-    station_location: str | None = None
+    unit_type: UnitType | None = None
+    station_location: str | None = Field(default=None, min_length=1)
 
 class UnitStatusUpdate(BaseModel):
     status : UnitStatus
