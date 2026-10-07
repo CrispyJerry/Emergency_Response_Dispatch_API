@@ -2,12 +2,40 @@
 
 A FastAPI service for managing emergency response units (ambulances, fire trucks, police), backed by PostgreSQL.
 
-## Requirements
+## Run with Docker (recommended)
+
+The quickest way to get running. Requires [Docker](https://docs.docker.com/get-docker/) with the Compose plugin; no local Python or PostgreSQL needed.
+
+```bash
+docker compose up --build
+```
+
+This starts two services:
+
+- **`db`**: PostgreSQL 16 with the `unit_management` database (user/password `postgres`/`postgres`). Data is kept in the `pgdata` named volume.
+- **`api`**: the FastAPI app. It waits for the database health check to pass, runs `alembic upgrade head`, then serves on port 8000.
+
+Interactive docs are at http://localhost:8000/docs.
+
+Useful commands:
+
+```bash
+docker compose up -d --build   # run in the background
+docker compose logs -f api     # follow API logs
+docker compose down            # stop containers (data is kept)
+docker compose down -v         # stop and delete the database volume
+```
+
+The Compose setup sets its own `DATABASE_URL` and does not read `.env`. The credentials in `docker-compose.yml` are for local development only.
+
+## Local setup (without Docker)
+
+### Requirements
 
 - Python 3.12+
 - PostgreSQL
 
-## Setup
+### Steps
 
 1. **Create the database.** On Linux, as the `postgres` user:
 
@@ -51,6 +79,14 @@ A FastAPI service for managing emergency response units (ambulances, fire trucks
    ```
 
    Interactive docs are at http://127.0.0.1:8000/docs.
+
+## Running tests
+
+The tests use an in-memory SQLite database, so they don't need PostgreSQL or Docker. With the virtual environment active:
+
+```bash
+pytest
+```
 
 ## Endpoints
 
