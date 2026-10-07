@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-from app.schema import Unit, UnitCreate, UnitUpdate, UnitStatusUpdate, ALLOWED_TRANSITIONS
+from app.schema import Unit, UnitCreate, UnitUpdate, UnitStatusUpdate, ALLOWED_TRANSITIONS, UnitType, UnitStatus
 from app.database import get_db
 from app.db_models import UnitDB
 
 router = APIRouter(prefix="/api/units", tags=["units"])
 
-PREFIXES = {"Ambulance": "AMB", "Firetruck": "FT", "Police" : "PO"}
+PREFIXES = {"Ambulance": "AMB", "Firetruck": "FT", "Police": "PO"}
 
 
 def generate_callsign(db: Session, unit_type: str) -> str:
@@ -23,14 +23,9 @@ def generate_callsign(db: Session, unit_type: str) -> str:
     return f"{prefix}-{max(numbers, default=0) + 1}"
 
 
-@router.get("/")
-def root():
-    return {"message": "Unit Management API is running"}
-
-
-@router.get("/api/units", response_model=list[Unit])
-def get_units(status: str | None = None, unit_type: str | None = None,station_location: str | None = None,
-              db: Session = Depends(get_db)):
+@router.get("", response_model=list[Unit])
+def get_units(status: UnitStatus | None = None, unit_type: UnitType | None = None,
+              station_location: str | None = None, db: Session = Depends(get_db)):
     query = select(UnitDB)
     if status is not None:
         query = query.where(UnitDB.status == status)
@@ -41,7 +36,7 @@ def get_units(status: str | None = None, unit_type: str | None = None,station_lo
     return db.scalars(query).all()
 
 
-@router.get("/api/units/{unit_id}", response_model=Unit)
+@router.get("/{unit_id}", response_model=Unit)
 def get_unit(unit_id: int, db: Session = Depends(get_db)):
     unit = db.get(UnitDB, unit_id)
     if unit is None:
@@ -49,7 +44,7 @@ def get_unit(unit_id: int, db: Session = Depends(get_db)):
     return unit
 
 
-@router.post("/api/units", response_model=Unit, status_code=201)
+@router.post("", response_model=Unit, status_code=201)
 def create_unit(unit_data: UnitCreate, db: Session = Depends(get_db)):
     new_unit = UnitDB(
         callsign=generate_callsign(db, unit_data.unit_type),
@@ -62,25 +57,20 @@ def create_unit(unit_data: UnitCreate, db: Session = Depends(get_db)):
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            status_code=409,
-            detail=f"Unit {new_unit.callsign} already exists",
-            
-        )
+        raise HTTPException(status_code=409, detail=f"Unit {new_unit.callsign} already exists")
     db.refresh(new_unit)
     return new_unit
 
 
-@router.patch("/api/units/{unit_id}/status", response_model=Unit)
-def update_status(unit_id: int, status_update: UnitStatusUpdate,
-                  db: Session = Depends(get_db)):
+@router.patch("/{unit_id}/status", response_model=Unit)
+def update_status(unit_id: int, status_update: UnitStatusUpdate, db: Session = Depends(get_db)):
     unit = db.get(UnitDB, unit_id)
     if unit is None:
         raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found")
     if status_update.status not in ALLOWED_TRANSITIONS.get(unit.status, []):
         raise HTTPException(
             status_code=400,
-            detail=f"Cannot change status from {unit.status} to {status_update.status}"
+            detail=f"Cannot change status from {unit.status} to {status_update.status}",
         )
     unit.status = status_update.status
     db.commit()
@@ -88,7 +78,7 @@ def update_status(unit_id: int, status_update: UnitStatusUpdate,
     return unit
 
 
-@router.patch("/api/units/{unit_id}", response_model=Unit)
+@router.patch("/{unit_id}", response_model=Unit)
 def update_unit(unit_id: int, unit_data: UnitUpdate, db: Session = Depends(get_db)):
     unit = db.get(UnitDB, unit_id)
     if unit is None:
@@ -100,7 +90,7 @@ def update_unit(unit_id: int, unit_data: UnitUpdate, db: Session = Depends(get_d
     return unit
 
 
-@router.delete("/api/units/{unit_id}")
+@router.delete("/{unit_id}")
 def delete_unit(unit_id: int, db: Session = Depends(get_db)):
     unit = db.get(UnitDB, unit_id)
     if unit is None:
