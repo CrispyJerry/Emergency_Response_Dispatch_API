@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.schema import Unit, UnitCreate, UnitUpdate, UnitStatusUpdate
+from app.schema import Unit, UnitCreate, UnitUpdate, UnitStatusUpdate, ALLOWED_TRANSITIONS
 from app.database import get_db
 from app.db_models import UnitDB
 
@@ -68,6 +68,11 @@ def update_status(unit_id: int, status_update: UnitStatusUpdate,
     unit = db.get(UnitDB, unit_id)
     if unit is None:
         raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found")
+    if status_update.status not in ALLOWED_TRANSITIONS.get(unit.status, []):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot change status from {unit.status} to {status_update.status}"
+        )
     unit.status = status_update.status
     db.commit()
     db.refresh(unit)

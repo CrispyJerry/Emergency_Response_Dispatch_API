@@ -5,6 +5,11 @@ from enum import Enum
 
 UnitType = Literal["Ambulance","Firetruck","Police"]
 UnitStatus = Literal["available","en_route","arrived"]
+ALLOWED_TRANSITIONS = {
+    "available" : ["en_route"],
+    "en_route" : ["arrived"],
+    "arrived" : ["available"],
+}
 
 class Unit(BaseModel):
     model_config = ConfigDict(from_attributes=True)
