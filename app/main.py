@@ -96,6 +96,11 @@ def delete_unit(unit_id: int, db: Session = Depends(get_db)):
     unit = db.get(UnitDB, unit_id)
     if unit is None:
         raise HTTPException(status_code=404, detail=f"Unit {unit_id} not found")
+    if unit.status != "available":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cannot delete {unit.callsign} while it is {unit.status}",
+        )
     db.delete(unit)
     db.commit()
     return {"message": f"Unit {unit.callsign} deleted"}
